@@ -1,8 +1,8 @@
-﻿using Blish_HUD.Settings;
+﻿using Blish_HUD.Common;
 using Microsoft.Xna.Framework;
 
 namespace Blish_HUD.GameServices {
-    public abstract class ServiceModule<T> : IUpdatable
+    public class ServiceModule<T> : IUpdatable
         where T : GameService {
 
         protected readonly T _service;

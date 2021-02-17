@@ -1,46 +1,38 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using Blish_HUD.GameServices.Render;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using MonoGame.Extended;
 
 namespace Blish_HUD.Entities {
 
-    public class World : Entity {
+    public class World : IRenderable, IUpdate, IWorld {
+
+        public SynchronizedCollection<IEntity> Entities { get; private set; } = new SynchronizedCollection<IEntity>();
         
-        public SynchronizedCollection<Entity> Entities { get; private set; }
-
-        private IOrderedEnumerable<Entity> _sortedEntities;
-
-        public World() : base() {
-            this.Entities = new SynchronizedCollection<Entity>();
-            UpdateEntitySort();
-        }
-
-        private void UpdateEntitySort() {
-            _sortedEntities = this.Entities.ToList().OrderByDescending(e => e.DistanceFromCamera);
-        }
-
-        /// <inheritdoc />
-        public override void HandleRebuild(GraphicsDevice graphicsDevice) {
-            /* NOOP - world does not need to rebuild */ 
-        }
-
-        public override void DoUpdate(GameTime gameTime) {
-            UpdateEntitySort();
-
-            foreach (var entity in _sortedEntities) {
-                entity.DoUpdate(gameTime);
+        private IEnumerable<IEntity> GetEntities(bool sorted = false) {
+            lock (this.Entities.SyncRoot) {
+                return sorted
+                    ? this.Entities.OrderByDescending(e => e.DrawOrder).ToArray()
+                    : this.Entities.ToArray();
             }
         }
 
-        public override void DoDraw(GraphicsDevice graphicsDevice) {
+        public void Update(GameTime gameTime) {
+            foreach (var entity in GetEntities()) {
+                entity.Update(gameTime);
+            }
+        }
+
+        public void Render(GraphicsDevice graphicsDevice) {
             graphicsDevice.BlendState        = BlendState.AlphaBlend;
             graphicsDevice.DepthStencilState = DepthStencilState.DepthRead;
             graphicsDevice.SamplerStates[0]  = SamplerState.LinearWrap;
             graphicsDevice.RasterizerState   = RasterizerState.CullNone;
 
-            foreach (var entity in _sortedEntities.Where(entity => entity.Visible)) {
-                entity.DoDraw(graphicsDevice);
+            foreach (var entity in GetEntities(true)) {
+                entity.Render(graphicsDevice, this, GameService.Gw2Mumble.PlayerCamera);
             }
         }
     }

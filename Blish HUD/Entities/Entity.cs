@@ -5,7 +5,7 @@ using System.ComponentModel;
 using System.Runtime.CompilerServices;
 
 namespace Blish_HUD.Entities {
-    public abstract class Entity : INotifyPropertyChanged, IUpdatable, IRenderable3D {
+    public abstract class Entity : INotifyPropertyChanged, IEntity {
 
         protected static BasicEffect StandardEffect { get; } = new BasicEffect(BlishHud.ActiveGraphicsDeviceManager.GraphicsDevice) { TextureEnabled = true };
 
@@ -124,6 +124,8 @@ namespace Blish_HUD.Entities {
         public virtual float DistanceFromPlayer => Vector3.Distance(this.Position, GameService.Gw2Mumble.PlayerCharacter.Position);
         public virtual float DistanceFromCamera => Vector3.Distance(this.Position, GameService.Gw2Mumble.PlayerCamera.Position);
 
+        public float DrawOrder => Vector3.DistanceSquared(this.Position, GameService.Gw2Mumble.PlayerCamera.Position);
+
         private EntityText BuildTitleText() {
             var entityText = new EntityText(this) {
                 VerticalOffset = 2f
@@ -141,6 +143,10 @@ namespace Blish_HUD.Entities {
             Update(gameTime);
 
             this.Billboard?.DoUpdate(gameTime);
+        }
+
+        public void Render(GraphicsDevice graphicsDevice, IWorld world, ICamera camera) {
+            DoDraw(graphicsDevice);
         }
 
         public virtual void DoDraw(GraphicsDevice graphicsDevice) {

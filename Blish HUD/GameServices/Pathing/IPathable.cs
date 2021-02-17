@@ -1,4 +1,5 @@
-﻿using Microsoft.Xna.Framework;
+﻿using Blish_HUD.Common;
+using Microsoft.Xna.Framework;
 
 namespace Blish_HUD.Pathing {
     public interface IPathable<out TEntity> : IPathable

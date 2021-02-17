@@ -106,8 +106,9 @@ namespace Blish_HUD {
 
             GameService.Debug.StartTimeFunc("3D objects");
             // Only draw 3D elements if we are in game and map is closed
-            if (GameService.GameIntegration.IsInGame && !GameService.Gw2Mumble.UI.IsMapOpen)
-                this.World.DoDraw(this.GraphicsDevice);
+            if (GameService.GameIntegration.IsInGame && !GameService.Gw2Mumble.UI.IsMapOpen) {
+                this.World.Render(this.GraphicsDevice);
+            }
             GameService.Debug.StopTimeFunc("3D objects");
 
             // Slightly better scaling (text is a bit more legible)
@@ -120,7 +121,7 @@ namespace Blish_HUD {
             GameService.Debug.StopTimeFunc("UI Elements");
 
             GameService.Debug.StartTimeFunc("Render Queue");
-            if (this._queuedRenders.TryDequeue(out var renderCall)) {
+            if (_queuedRenders.TryDequeue(out var renderCall)) {
                 renderCall.Invoke(this.GraphicsDevice);
             }
             GameService.Debug.StopTimeFunc("Render Queue");
@@ -140,7 +141,7 @@ namespace Blish_HUD {
         protected override void Unload() { /* NOOP */ }
 
         protected override void Update(GameTime gameTime) {
-            this.World.DoUpdate(gameTime);
+            this.World.Update(gameTime);
             Entities.Effects.EntityEffect.UpdateEffects(gameTime);
             this.SpriteScreen.Update(gameTime);
         }
