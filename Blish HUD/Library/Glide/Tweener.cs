@@ -214,7 +214,7 @@ namespace Glide
 	            {
 	            	var tween = toAdd[i];
 	                allTweens.Add(tween);
-	            	if (tween.Target == null) continue;	//	don't sort timers by target
+	            	if (tween?.Target == null) continue;	//	don't sort timers by target
 	            	
 	            	List<Tween> list = null;
 	            	if (!tweens.TryGetValue(tween.Target, out list))
@@ -227,7 +227,7 @@ namespace Glide
 	            {
 	            	var tween = toRemove[i];
 	                allTweens.Remove(tween);
-	                if (tween.Target == null) continue; // see above
+	                if (tween?.Target == null) continue; // see above
 	                
 	                List<Tween> list = null;
 	                if (tweens.TryGetValue(tween.Target, out list))
