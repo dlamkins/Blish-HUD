@@ -81,7 +81,7 @@ namespace Blish_HUD.GameIntegration {
 
         private void UpdateActiveAudioDeviceManager() {
             // Must be called from an MTA thread.
-            Task.Run(InitializeProcessMeterInformations);
+            //Task.Run(InitializeProcessMeterInformations);
         }
 
         public override void Update(GameTime gameTime) {

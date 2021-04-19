@@ -22,10 +22,36 @@ namespace Blish_HUD.Controls {
 
         #region Load Static
 
+        private static readonly List<WeakReference<ContextMenuStrip>> _contextMenuStrips = new List<WeakReference<ContextMenuStrip>>();
+
         private static readonly Texture2D _textureMenuEdge;
 
         static ContextMenuStrip() {
             _textureMenuEdge = Content.GetTexture("scrollbar-track");
+
+            Input.Mouse.LeftMouseButtonPressed  += HandleMouseButtonPressed;
+            Input.Mouse.RightMouseButtonPressed += HandleMouseButtonPressed;
+        }
+
+        private static void RegisterContextMenuStrip(ContextMenuStrip contextMenuStrip) {
+            _contextMenuStrips.Add(new WeakReference<ContextMenuStrip>(contextMenuStrip));
+        }
+
+        private static void HandleMouseButtonPressed(object sender, MouseEventArgs e) {
+            WeakReference<ContextMenuStrip>[] allMenuStrips = _contextMenuStrips.ToArray();
+            
+            if (Input.Mouse.ActiveControl is ContextMenuStripItem menuStrip && menuStrip.CanCheck) return;
+
+            foreach (var cmsRef in allMenuStrips) {
+                if (!cmsRef.TryGetTarget(out var cms)) {
+                    _contextMenuStrips.Remove(cmsRef);
+                    continue;
+                }
+
+                if (!cms.Visible) continue;
+
+                if (!cms.MouseOver) cms.Hide();
+            }
         }
 
         #endregion
@@ -35,8 +61,7 @@ namespace Blish_HUD.Controls {
             this.Width   = CONTROL_WIDTH;
             this.ZIndex  = Screen.CONTEXTMENU_BASEINDEX;
 
-            Input.Mouse.LeftMouseButtonPressed  += MouseButtonPressed;
-            Input.Mouse.RightMouseButtonPressed += MouseButtonPressed;
+            RegisterContextMenuStrip(this);
         }
 
         protected override void OnShown(EventArgs e) {
@@ -231,6 +256,7 @@ namespace Blish_HUD.Controls {
                                    new Rectangle(0,                           1, _textureMenuEdge.Width, _size.Y - 2),
                                    Color.White * 0.8f);
         }
+
     }
 
 }

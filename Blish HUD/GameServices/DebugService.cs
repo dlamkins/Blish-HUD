@@ -201,6 +201,14 @@ namespace Blish_HUD {
             this.OverlayTexts.TryAdd("renderLate",  gameTime => "Render Late: "     + (gameTime.IsRunningSlowly ? "Yes" : "No"));
             this.OverlayTexts.TryAdd("arcDps",      _ => "ArcDPS Bridge: "          + (ArcDps.RenderPresent ? "Yes" : "No"));
             this.OverlayTexts.TryAdd("volume",      _ => "Average In-Game Volume: " + GameIntegration.Audio.Volume);
+            this.OverlayTexts.TryAdd("plrPos",      _ => $"Player Position: {GameService.Gw2Mumble.PlayerCharacter.Position}");
+            this.OverlayTexts.TryAdd("cameraPos",   _ => $"Camera Position: {GameService.Gw2Mumble.PlayerCamera.Position}");
+            this.OverlayTexts.TryAdd("mapCenter",   _ => $"Map Center: {(int)GameService.Gw2Mumble.UI.MapCenter.X} x {(int)GameService.Gw2Mumble.UI.MapCenter.Y}");
+            this.OverlayTexts.TryAdd("mapScale",    _ => $"Map Scale: {GameService.Gw2Mumble.UI.MapScale}");
+            this.OverlayTexts.TryAdd("mapId",       _ => $"Map Id: {GameService.Gw2Mumble.CurrentMap.Id}");
+            this.OverlayTexts.TryAdd("isComp",      _ => $"Is Comp: {GameService.Gw2Mumble.CurrentMap.IsCompetitiveMode}");
+            this.OverlayTexts.TryAdd("mapType",     _ => $"Map Type: {GameService.Gw2Mumble.CurrentMap.Type}");
+            this.OverlayTexts.TryAdd("characterCameraDist",     _ => $"Cam/Plr Distance: {Vector3.Distance(GameService.Gw2Mumble.PlayerCharacter.Position, GameService.Gw2Mumble.PlayerCamera.Position)}");
         }
 
         protected override void Update(GameTime gameTime) {
