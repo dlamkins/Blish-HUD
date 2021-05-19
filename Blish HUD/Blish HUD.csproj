@@ -202,13 +202,14 @@
     <PackageReference Include="JsonSubTypes" Version="1.6.0" PrivateAssets="all" />
     <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0" PrivateAssets="all" />
     <PackageReference Include="MonoGame.Content.Builder" Version="3.7.0.9" PrivateAssets="all" />
-    <PackageReference Include="MonoGame.Extended" Version="[3.7.0]" />
-    <PackageReference Include="MonoGame.Extended.Content.Pipeline" Version="3.7.0" PrivateAssets="all" />
-    <PackageReference Include="MonoGame.Framework.WindowsDX" Version="[3.7.1.189]" />
-    <PackageReference Include="Newtonsoft.Json" Version="[12.0.2]" />
+    <PackageReference Include="MonoGame.Extended" Version="3.8.0" />
+    <PackageReference Include="MonoGame.Extended.Content.Pipeline" Version="3.8.0" PrivateAssets="all" />
+    <PackageReference Include="MonoGame.Framework.WindowsDX" Version="3.7.1.189" />
+    <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
     <PackageReference Include="NLog" Version="4.6.7" PrivateAssets="all" />
     <PackageReference Include="Octokit" Version="0.32.0" PrivateAssets="all" />
     <PackageReference Include="SemanticVersioning" Version="1.2.0" PrivateAssets="all" />
+    <PackageReference Include="SharpDX.D3DCompiler" Version="4.2.0" />
   </ItemGroup>
 
   <ItemGroup>
@@ -221,8 +222,15 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Reference Include="CppNet">
+      <HintPath>CppNet.dll</HintPath>
+    </Reference>
     <Reference Include="System.ComponentModel.Composition" />
     <Reference Include="System.Windows.Forms" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Library\TwoMGFX\" />
   </ItemGroup>
 
   <Target Name="BuildRef" AfterTargets="Build">

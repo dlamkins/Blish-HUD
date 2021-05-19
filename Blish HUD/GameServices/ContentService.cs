@@ -117,7 +117,7 @@ namespace Blish_HUD {
         protected override void Load() {
             Textures.Load();
             var zipArchiveReader = new ZipArchiveReader(RefPath);
-            _audioDataReader = zipArchiveReader.GetSubPath("audio");
+            _audioDataReader  = zipArchiveReader.GetSubPath("audio");
         }
 
         public void PlaySoundEffectByName(string soundName) {
@@ -145,6 +145,14 @@ namespace Blish_HUD {
                 });
 
             }
+        }
+
+        public Effect GetEffect(string effectName) {
+            string rawEffect = System.Text.Encoding.UTF8.GetString(new ZipArchiveReader(RefPath).GetSubPath("shaders").GetFileBytes(effectName));
+
+            byte[] compiledShader = TwoMGFX.ShaderCompilerUtil.CompileShader(rawEffect);
+
+            return new Effect(BlishHud.ActiveGraphicsDeviceManager.GraphicsDevice, compiledShader);
         }
 
         private static string RefPath => ApplicationSettings.Instance.RefPath ?? REF_FILE;

@@ -22,6 +22,7 @@ namespace Blish_HUD.Controls.Effects {
 
         static ScrollingHighlightEffect() {
             _masterScrollEffect = BlishHud.ActiveContentManager.Load<Effect>(@"effects\menuitem");
+            //_masterScrollEffect = GameService.Content.GetEffect("menuitem.fx");
 
             _masterScrollEffect.Parameters[SPARAM_MASK].SetValue(GameService.Content.GetTexture("156072"));
             _masterScrollEffect.Parameters[SPARAM_OVERLAY].SetValue(GameService.Content.GetTexture("156071"));

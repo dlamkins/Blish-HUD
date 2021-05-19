@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Linq;
 using Blish_HUD.GameServices.Render;
 using Microsoft.Xna.Framework;
@@ -9,20 +10,61 @@ namespace Blish_HUD.Entities {
 
     public class World : IRenderable, IUpdate, IWorld {
 
-        public SynchronizedCollection<IEntity> Entities { get; private set; } = new SynchronizedCollection<IEntity>();
-        
+        private readonly ConcurrentQueue<(IEntity Entity, bool IsAdded)> _pendingEntityAction = new ConcurrentQueue<(IEntity Entity, bool IsAdded)>();
+
+        private readonly SynchronizedCollection<IEntity> _entities = new SynchronizedCollection<IEntity>();
+
+        public IEnumerable<IEntity> Entities => GetEntities(false);
+
+        public void AddEntity(IEntity entity) {
+            _pendingEntityAction.Enqueue((entity, true));
+        }
+
+        public void AddEntities(IEnumerable<IEntity> entities) {
+            foreach (var entity in entities) {
+                AddEntity(entity);
+            }
+        }
+
+        public void RemoveEntity(IEntity entity) {
+            _pendingEntityAction.Enqueue((entity, false));
+        }
+
+        public void RemoveEntities(IEnumerable<IEntity> entities) {
+            foreach (var entity in entities) {
+                RemoveEntity(entity);
+            }
+        }
+
         private IEnumerable<IEntity> GetEntities(bool sorted = false) {
-            lock (this.Entities.SyncRoot) {
+            lock (_entities.SyncRoot) {
                 return sorted
-                    ? this.Entities.OrderByDescending(e => e.DrawOrder).ToArray()
-                    : this.Entities.ToArray();
+                    ? _entities.OrderByDescending(e => e.DrawOrder).ToArray()
+                    : _entities.ToArray();
+            }
+        }
+
+        private void HandlePendingEntities() {
+            lock (_entities.SyncRoot) {
+                while (_pendingEntityAction.TryDequeue(out var pendingEntityAction)) {
+                    if (pendingEntityAction.IsAdded) {
+                        _entities.Add(pendingEntityAction.Entity);
+                    } else {
+                        _entities.Remove(pendingEntityAction.Entity);
+                    }
+                }
+            }
+        }
+
+        private void UpdateEntities(GameTime gameTime) {
+            foreach (var entity in GetEntities()) {
+                entity.Update(gameTime);
             }
         }
 
         public void Update(GameTime gameTime) {
-            foreach (var entity in GetEntities()) {
-                entity.Update(gameTime);
-            }
+            HandlePendingEntities();
+            UpdateEntities(gameTime);
         }
 
         public void Render(GraphicsDevice graphicsDevice) {
