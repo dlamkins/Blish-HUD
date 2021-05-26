@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Concurrent;
+using Blish_HUD.Content;
 using Blish_HUD.Controls;
 using Blish_HUD.Entities;
 using Gw2Sharp.Mumble.Models;
@@ -142,8 +143,8 @@ namespace Blish_HUD {
 
         protected override void Update(GameTime gameTime) {
             this.World.Update(gameTime);
-            Entities.Effects.EntityEffect.UpdateEffects(gameTime);
             this.SpriteScreen.Update(gameTime);
+            SharedEffect.UpdateEffects(gameTime);
         }
     }
 }

@@ -1,8 +1,9 @@
-﻿using Microsoft.Xna.Framework;
+﻿using Blish_HUD.Content;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
 namespace Blish_HUD.Pathing.Entities.Effects {
-    public class TrailEffect : Blish_HUD.Entities.Effects.EntityEffect {
+    public class TrailEffect : SharedEffect {
 
         // Per-effect parameters
         private const string PARAMETER_WORLDVIEWPROJECTION  = "WorldViewProjection";

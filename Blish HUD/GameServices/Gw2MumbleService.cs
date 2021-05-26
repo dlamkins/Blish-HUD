@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading;
 using Blish_HUD.Gw2Mumble;
 using Gw2Sharp;
 using Microsoft.Xna.Framework;
@@ -87,6 +88,11 @@ namespace Blish_HUD {
                 UpdateDetails(gameTime);
             } else {
                 _delayedTicks++;
+
+                if (GameService.GameIntegration.IsInGame) {
+                    Thread.Sleep(1);
+                    Update(new GameTime(gameTime.TotalGameTime.Duration() + TimeSpan.FromMilliseconds(1), TimeSpan.FromMilliseconds(1)));
+                }
             }
         }
 
