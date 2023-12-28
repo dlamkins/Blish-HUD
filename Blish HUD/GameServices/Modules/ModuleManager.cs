@@ -135,6 +135,7 @@ namespace Blish_HUD.Modules {
         public void DeleteModule() {
             Disable();
             GameService.Module.UnregisterModule(this);
+            GameService.Module.ModulePkgRepoHandler.RefreshPendingUpdates();
             this.DataReader.DeleteRoot();
         }
 

@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using Blish_HUD.Content;
 using Blish_HUD.Controls;
 using Blish_HUD.Graphics.UI;
@@ -14,7 +16,23 @@ namespace Blish_HUD.Modules.UI.Views {
         public FlowPanel        RepoFlowPanel { get; private set; }
         public ContextMenuStrip SettingsMenu  { get; private set; }
 
+        private IReadOnlyList<PkgManifest> _pendingUpdates = Array.Empty<PkgManifest>();
+        public IReadOnlyList<PkgManifest> PendingUpdates {
+            get {
+                return _pendingUpdates;
+            }
+            set {
+                if (_pendingUpdates != value) {
+                    if (_updateAllModules == null) throw new ViewNotBuiltException();
+
+                    _pendingUpdates = value;
+                    UpdatePendingUpdates();
+                }
+            }
+        }
+
         private TextBox        _searchbox;
+        private StandardButton _updateAllModules;
         private StandardButton _restartBlishHud;
         private Label          _restartBlishHudWarning;
 
@@ -32,12 +50,31 @@ namespace Blish_HUD.Modules.UI.Views {
         protected override void Build(Container buildPanel) {
             _searchbox = new TextBox {
                 PlaceholderText = Strings.Common.PlaceholderSearch,
-                Width           = buildPanel.Width - 56,
+                Width           = buildPanel.Width - 56 - 185,
                 Parent          = buildPanel
             };
 
+            _updateAllModules = new StandardButton() {
+                Text = string.Format(ModulesService.PkgManagement_UpdateModules, "0"),
+                Icon = AsyncTexture2D.FromAssetId(157130),
+                Width = 185,
+                Enabled = false,
+                Location = new Point(_searchbox.Right + 6, _searchbox.Top + 1),
+                Parent = buildPanel,
+            };
+
+            _updateAllModules.Click += async delegate {
+                foreach (var moduleManifest in GameService.Module.ModulePkgRepoHandler.PendingUpdates) {
+                    var existingModule = GameService.Module.Modules.FirstOrDefault(m => m.Manifest.Namespace == moduleManifest.Namespace);
+
+                    if (existingModule != null) {
+                        await GameService.Module.ModulePkgRepoHandler.ReplacePackage(moduleManifest, existingModule);
+                    }
+                }
+            };
+
             var settingsButton = new GlowButton {
-                Location         = new Point(_searchbox.Right + 4, _searchbox.Top),
+                Location         = new Point(_updateAllModules.Right + 2, _updateAllModules.Top - 3),
                 Icon             = AsyncTexture2D.FromAssetId(157109),
                 ActiveIcon       = AsyncTexture2D.FromAssetId(157110),
                 Visible          = true,
@@ -88,6 +125,11 @@ namespace Blish_HUD.Modules.UI.Views {
             settingsButton.Click += (sender, args) => {
                 SettingsMenu.Show((Control) sender);
             };
+        }
+
+        private void UpdatePendingUpdates() {
+            _updateAllModules.Text = string.Format(ModulesService.PkgManagement_UpdateModules, this.PendingUpdates.Count);
+            _updateAllModules.Enabled = this.PendingUpdates.Count > 0;
         }
 
         private void SearchboxOnTextChanged(object sender, EventArgs e) {

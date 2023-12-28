@@ -31,6 +31,12 @@ namespace Blish_HUD.Modules {
 
         private readonly List<IPkgRepoProvider> _repos = new List<IPkgRepoProvider>();
 
+        /// <summary>
+        /// Fires when <see cref="PendingUpdates"/> is refreshed.
+        /// This event doesn't necessarily indicate that the pending items have changed.
+        /// </summary>
+        public event EventHandler PendingUpdatesRefreshed;
+
         private IGrouping<string, PkgManifest>[] _pendingUpdates = Array.Empty<IGrouping<string, PkgManifest>>();
 
         /// <summary>
@@ -134,12 +140,18 @@ namespace Blish_HUD.Modules {
 
         private void RepoResultsLoaded(Task<bool> repoLoadedTask) {
             if (repoLoadedTask.Result) {
-                _pendingUpdates = _defaultRepoProvider.GetPkgManifests(new Func<PkgManifest, bool>[] { StaticPkgRepoProvider.FilterShowOnlySupportedVersion, StaticPkgRepoProvider.FilterShowOnlyUpdates })
+                RefreshPendingUpdates();
+            }
+        }
+
+        internal void RefreshPendingUpdates() {
+            _pendingUpdates = _defaultRepoProvider.GetPkgManifests(new Func<PkgManifest, bool>[] { StaticPkgRepoProvider.FilterShowOnlySupportedVersion, StaticPkgRepoProvider.FilterShowOnlyUpdates })
                                                       .GroupBy(pkgManfiest => pkgManfiest.Namespace)
                                                       .ToArray();
 
-                RefreshUpdateIndicatorStates();
-            }
+            PendingUpdatesRefreshed?.Invoke(this, null);
+
+            RefreshUpdateIndicatorStates();
         }
 
         private string GetUpgradePathStringFromRepoPkgGroup(IGrouping<string, PkgManifest> pkgGroup) {
@@ -161,7 +173,10 @@ namespace Blish_HUD.Modules {
         private ModuleManager FinalizeInstalledPackage(ModuleManager existingModule, string newModulePath) {
             existingModule?.DeleteModule();
 
-            return GameService.Module.RegisterPackedModule(newModulePath);
+            var module = GameService.Module.RegisterPackedModule(newModulePath);
+            RefreshPendingUpdates();
+
+            return module;
         }
 
         public async Task<(ModuleManager NewModule, bool Success, string Error)> ReplacePackage(PkgManifest pkgManifest, ModuleManager existingModule, IProgress<string> progress = null) {

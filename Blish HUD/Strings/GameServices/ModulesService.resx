@@ -248,4 +248,7 @@ Download some modules and place them in the modules folder.</value>
   <data name="PkgManagement_MoreInfo" xml:space="preserve">
     <value>More Info</value>
   </data>
+  <data name="PkgManagement_UpdateModules" xml:space="preserve">
+    <value>Update {0} Module(s)</value>
+  </data>
 </root>

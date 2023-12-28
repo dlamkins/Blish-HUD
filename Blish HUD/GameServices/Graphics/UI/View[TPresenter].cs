@@ -1,9 +1,12 @@
 ﻿using System;
+using System.CodeDom;
 using System.Threading.Tasks;
 using Blish_HUD.Controls;
 
 namespace Blish_HUD.Graphics.UI {
     public abstract class View<TPresenter> : IView where TPresenter : IPresenter {
+
+        private static readonly Logger Logger = Logger.GetLogger(typeof(View<TPresenter>));
 
         public event EventHandler<EventArgs> Loaded;
 
@@ -47,11 +50,15 @@ namespace Blish_HUD.Graphics.UI {
         public void DoBuild(Container buildPanel) {
             this.ViewTarget = buildPanel;
 
-            Build(buildPanel);
+            try {
+                Build(buildPanel);
 
-            this.Built?.Invoke(this, EventArgs.Empty);
+                this.Built?.Invoke(this, EventArgs.Empty);
 
-            Presenter.DoUpdateView();
+                Presenter.DoUpdateView();
+            } catch (Exception ex) {
+                Logger.Error(ex, $"Failed to build or update view of type '{this.GetType().Name}'.");
+            }
         }
 
         public void DoUnload() {

@@ -265,4 +265,10 @@ Lade einige herunter und platziere sie im Modulverzeichnis.</value>
   <data name="PkgManagement_MoreInfo" xml:space="preserve">
     <value>Mehr Info</value>
   </data>
+  <data name="PkgManagement_UpdateModules" xml:space="preserve">
+    <value>Aktualisiere {0} Modul(e)</value>
+  </data>
+  <data name="PkgManagement_IsPreview" xml:space="preserve">
+    <value>Vorabversion</value>
+  </data>
 </root>

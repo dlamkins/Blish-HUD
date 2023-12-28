@@ -510,5 +510,14 @@ namespace Blish_HUD.Strings.GameServices {
                 return ResourceManager.GetString("PkgManagement_Update", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Update {0} Module(s).
+        /// </summary>
+        internal static string PkgManagement_UpdateModules {
+            get {
+                return ResourceManager.GetString("PkgManagement_UpdateModules", resourceCulture);
+            }
+        }
     }
 }

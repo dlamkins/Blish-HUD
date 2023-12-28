@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections;
+using System.Collections.Immutable;
 using System.Linq;
 using System.Threading.Tasks;
 using Blish_HUD.Controls;
@@ -19,16 +21,28 @@ namespace Blish_HUD.Modules.UI.Presenters {
         }
 
         protected override async Task<bool> Load(IProgress<string> progress) {
+            GameService.Module.ModulePkgRepoHandler.PendingUpdatesRefreshed += OnPendingUpdatesRefreshed;
+
             return await this.Model.Load(progress);
         }
 
+        private void OnPendingUpdatesRefreshed(object sender, EventArgs e) {
+            UpdatePending();
+        }
+
         protected override void Unload() {
+            GameService.Module.ModulePkgRepoHandler.PendingUpdatesRefreshed -= OnPendingUpdatesRefreshed;
             GameService.Module.ModuleRegistered -= OnModuleRegistered;
+        }
+
+        private void UpdatePending() {
+            this.View.PendingUpdates = GameService.Module.ModulePkgRepoHandler.PendingUpdates.ToArray();
         }
 
         protected override void UpdateView() {
             UpdateAssemblyDirtiedState();
             UpdateExtraOptionsView();
+            UpdatePending();
             UpdatePackagesView();
 
             _viewBuiltOnce = true;

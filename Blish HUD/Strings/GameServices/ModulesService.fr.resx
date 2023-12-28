@@ -265,4 +265,10 @@ Téléchargez des modules et placez-les dans le dossier modules.</value>
   <data name="PkgManagement_MoreInfo" xml:space="preserve">
     <value>Plus d'informations</value>
   </data>
+  <data name="PkgManagement_UpdateModules" xml:space="preserve">
+    <value>Mettre à jour {0} module(s)</value>
+  </data>
+  <data name="PkgManagement_IsPreview" xml:space="preserve">
+    <value>Version Préliminaire</value>
+  </data>
 </root>
