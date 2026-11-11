@@ -51,7 +51,7 @@ namespace Blish_HUD.Controls {
         }
 
         public FormattedLabelPartBuilder SetHyperLink(string link) {
-            _link = new Action(() => System.Diagnostics.Process.Start(link));
+            _link = new Action(() => System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(link) { UseShellExecute = true }));
             return this;
         }
 

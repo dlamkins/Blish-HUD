@@ -81,14 +81,14 @@ namespace Blish_HUD.GameIntegration {
             _openBlishSettingsFolder = this.TrayIconMenu.Items.Add(Strings.GameServices.GameIntegrationService.TrayIcon_OpenSettingsFolder);
 
             _openBlishSettingsFolder.Click += delegate {
-                Process.Start(DirectoryUtil.BasePath);
+                Process.Start(new ProcessStartInfo(DirectoryUtil.BasePath) { UseShellExecute = true });
             };
 
             // Open ProgamData Folder
             _openBlishProgramDataFolder = this.TrayIconMenu.Items.Add(Strings.GameServices.GameIntegrationService.TrayIcon_OpenProgramDataFolder);
 
             _openBlishProgramDataFolder.Click += delegate {
-                Process.Start(DirectoryUtil.ProgramData);
+                Process.Start(new ProcessStartInfo(DirectoryUtil.ProgramData) { UseShellExecute = true });
             };
 
             // ------- & Exit
@@ -129,7 +129,7 @@ namespace Blish_HUD.GameIntegration {
 
             if (_service.Gw2Instance.IsSteamVersion) {
                 try {
-                    Process.Start("steam://run/1284210//" + string.Join(" ", args));
+                    Process.Start(new ProcessStartInfo("steam://run/1284210//" + string.Join(" ", args)) { UseShellExecute = true });
                 } catch (Exception ex) {
                     Logger.Warn(ex, "Failed to launch Guild Wars 2 via Steam.");
                 }

@@ -243,7 +243,7 @@ namespace Blish_HUD.Modules.UI.Views {
         }
 
         private void OnMoreInfoClicked(object sender, MouseEventArgs e) {
-            Process.Start($"https://link.blishhud.com/moduleinfo?module={this.ModuleNamespace}");
+            Process.Start(new ProcessStartInfo($"https://link.blishhud.com/moduleinfo?module={this.ModuleNamespace}") { UseShellExecute = true });
         }
 
         private void StatusImageOnClick(object sender, MouseEventArgs e) {

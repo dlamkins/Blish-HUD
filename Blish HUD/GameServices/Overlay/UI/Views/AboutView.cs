@@ -106,7 +106,7 @@ namespace Blish_HUD.Overlay.UI.Views {
                 Parent = aboutPanel
             };
 
-            discordBttn.Click += (s, e) => Process.Start("https://link.blishhud.com/discord");
+            discordBttn.Click += (s, e) => Process.Start(new ProcessStartInfo("https://link.blishhud.com/discord") { UseShellExecute = true });
 
             var bottomDiscordSection = new Image(GameService.Content.GetTexture("views/about/section-splitter")) {
                 Parent  = aboutPanel,
