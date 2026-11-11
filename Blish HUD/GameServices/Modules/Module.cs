@@ -246,7 +246,12 @@ namespace Blish_HUD.Modules {
 
         /// <inheritdoc />
         ~Module() {
-            Dispose(false);
+            // Exceptions on the finalizer thread crash Blish HUD (usually a module that failed to construct)
+            try {
+                Dispose(false);
+            } catch (Exception ex) {
+                Logger.Warn(ex, "Module {module} threw an exception while being finalized.", this.ModuleParameters?.Manifest?.GetDetailedName() ?? GetType().FullName);
+            }
         }
 
         #endregion
