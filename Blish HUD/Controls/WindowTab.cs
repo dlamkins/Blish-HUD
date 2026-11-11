@@ -9,7 +9,7 @@ namespace Blish_HUD.Controls {
         public AsyncTexture2D Icon     { get; set; }
         public int            Priority { get; set; }
 
-        public WindowTab(string name, AsyncTexture2D icon) : this(name, icon, name.GetHashCode()) { /* NOOP */ }
+        public WindowTab(string name, AsyncTexture2D icon) : this(name, icon, StringUtil.GetLegacyHashCode(name)) { /* NOOP */ }
 
         public WindowTab(string name, AsyncTexture2D icon, int priority) {
             this.Name     = name;
