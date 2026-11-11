@@ -67,7 +67,7 @@ namespace Blish_HUD.Content {
 
             using (var fileStream = File.OpenRead(Path.Combine(_directoryPath, filePath))) {
                 fileData = new byte[fileStream.Length];
-                await fileStream.ReadAsync(fileData, 0, (int) fileStream.Length);
+                await fileStream.ReadExactlyAsync(fileData, 0, fileData.Length);
             }
 
             return fileData;
