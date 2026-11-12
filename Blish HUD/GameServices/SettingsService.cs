@@ -36,6 +36,7 @@ namespace Blish_HUD {
             JsonReaderSettings = new JsonSerializerSettings() {
                 PreserveReferencesHandling = PreserveReferencesHandling.None,
                 TypeNameHandling           = TypeNameHandling.Auto,
+                SerializationBinder        = SettingsTypeBinder.Instance,
                 Converters = new List<JsonConverter>() {
                     new SettingCollection.SettingCollectionConverter(),
                     new SettingEntry.SettingEntryConverter(),

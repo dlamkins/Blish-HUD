@@ -32,7 +32,7 @@ namespace Blish_HUD.Settings {
                 var jObj = JObject.Load(reader);
 
                 string entryTypeString = jObj[SETTINGTYPE_KEY].Value<string>();
-                var    entryType       = Type.GetType(entryTypeString);
+                var    entryType       = SettingsTypeBinder.ResolveType(entryTypeString);
 
                 if (entryType == null) {
                     Logger.Warn("Failed to load setting of missing type '{settingDefinedType}'.", entryTypeString);
