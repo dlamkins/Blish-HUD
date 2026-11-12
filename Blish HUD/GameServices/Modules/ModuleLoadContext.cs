@@ -38,10 +38,21 @@ namespace Blish_HUD.Modules {
 
         private static readonly HashSet<string> _frameworkAssemblies = GetFrameworkAssemblies();
 
+        private static readonly List<ModuleLoadContext> _contexts = new List<ModuleLoadContext>();
+
+        static ModuleLoadContext() {
+            // So that Type.GetType, etc. can still find module types by name
+            Default.Resolving += DefaultOnResolving;
+        }
+
         private readonly ModuleManager _module;
 
         public ModuleLoadContext(ModuleManager module) : base(module.Manifest.Namespace) {
             _module = module;
+
+            lock (_contexts) {
+                _contexts.Add(this);
+            }
         }
 
         public Assembly LoadPackagedAssembly(string assemblyPath) {
@@ -72,6 +83,12 @@ namespace Blish_HUD.Modules {
                 } catch (FileNotFoundException) {
                     // We don't ship it anymore so let the module use its own copy
                 }
+            }
+
+            var otherModuleAssembly = FindModuleAssembly(assemblyName.Name, this);
+            if (otherModuleAssembly != null) {
+                Logger.Debug("Requested dependency {dependency} for {module} was resolved to the already loaded module assembly.", assemblyName.Name, _module.Manifest.GetDetailedName());
+                return otherModuleAssembly;
             }
 
             string assemblyPath = $"{assemblyName.Name}.dll";
@@ -107,6 +124,29 @@ namespace Blish_HUD.Modules {
             }
 
             return null;
+        }
+
+        private static Assembly FindModuleAssembly(string assemblyName, ModuleLoadContext requester) {
+            lock (_contexts) {
+                return _contexts.Where(context => context != requester)
+                                .Select(context => context._module.ModuleAssembly)
+                                .FirstOrDefault(assembly => assembly != null && string.Equals(assembly.GetName().Name, assemblyName, StringComparison.OrdinalIgnoreCase));
+            }
+        }
+
+        public static Assembly FindLoadedAssembly(string assemblyName) {
+            var moduleAssembly = FindModuleAssembly(assemblyName, null);
+            if (moduleAssembly != null) return moduleAssembly;
+
+            lock (_contexts) {
+                return _contexts.SelectMany(context => context.Assemblies)
+                                .FirstOrDefault(assembly => string.Equals(assembly.GetName().Name, assemblyName, StringComparison.OrdinalIgnoreCase));
+            }
+        }
+
+        private static Assembly DefaultOnResolving(AssemblyLoadContext context, AssemblyName assemblyName) {
+            // Only the module assemblies themselves - a module's private dependencies shouldn't leak into Blish HUD
+            return FindModuleAssembly(assemblyName.Name, null);
         }
 
         private static HashSet<string> GetFrameworkAssemblies() {

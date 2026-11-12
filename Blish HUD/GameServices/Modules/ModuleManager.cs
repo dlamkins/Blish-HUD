@@ -30,6 +30,8 @@ namespace Blish_HUD.Modules {
         /// Indicates that the modules assembly has been loaded into memory.
         /// </summary>
         public bool AssemblyLoaded => _moduleAssembly != null;
+
+        internal Assembly ModuleAssembly => _moduleAssembly;
         
         /// <summary>
         /// Used to indicate if a different version of the assembly has previously

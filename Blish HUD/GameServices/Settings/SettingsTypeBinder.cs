@@ -1,8 +1,8 @@
 using System;
 using System.IO;
-using System.Linq;
 using System.Reflection;
 using System.Runtime.Loader;
+using Blish_HUD.Modules;
 using Newtonsoft.Json.Serialization;
 
 namespace Blish_HUD.Settings {
@@ -31,9 +31,7 @@ namespace Blish_HUD.Settings {
             try {
                 return AssemblyLoadContext.Default.LoadFromAssemblyName(assemblyName);
             } catch (Exception ex) when (ex is FileNotFoundException || ex is FileLoadException) {
-                // Module assemblies aren't in the default context
-                return AssemblyLoadContext.All.SelectMany(context => context.Assemblies)
-                                          .FirstOrDefault(assembly => string.Equals(assembly.GetName().Name, assemblyName.Name, StringComparison.OrdinalIgnoreCase));
+                return ModuleLoadContext.FindLoadedAssembly(assemblyName.Name);
             }
         }
 
