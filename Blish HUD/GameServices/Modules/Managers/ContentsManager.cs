@@ -70,6 +70,11 @@ namespace Blish_HUD.Modules.Managers {
             long effectDataLength = _reader.GetFileBytes(effectPath, out byte[] effectData);
 
             if (effectDataLength > 0) {
+                if (MgfxTranscoder.IsLegacyEffect(effectData, (int)effectDataLength)) {
+                    Logger.Warn("Effect {effectPath} was compiled for an older version of MonoGame (MGFX v{legacyVersion}) and can't be loaded.", effectPath, MgfxTranscoder.LEGACY_VERSION);
+                    return null;
+                }
+
                 using var ctx    = GameService.Graphics.LendGraphicsDeviceContext();
                 var       effect = new Effect(ctx.GraphicsDevice, effectData, 0, (int)effectDataLength);
 
