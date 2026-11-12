@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using System.Runtime.Loader;
 
@@ -35,6 +36,8 @@ namespace Blish_HUD.Modules {
             "System.ServiceModel.Primitives"
         };
 
+        private static readonly HashSet<string> _frameworkAssemblies = GetFrameworkAssemblies();
+
         private readonly ModuleManager _module;
 
         public ModuleLoadContext(ModuleManager module) : base(module.Manifest.Namespace) {
@@ -56,6 +59,11 @@ namespace Blish_HUD.Modules {
         protected override Assembly Load(AssemblyName assemblyName) {
             if (!string.IsNullOrEmpty(assemblyName.CultureName)) {
                 return LoadSatelliteAssembly(assemblyName);
+            }
+
+            if (_frameworkAssemblies.Contains(assemblyName.Name)) {
+                // Modules bundle .NET Framework builds of things (like System.Memory) - use the runtime's copy instead
+                return Default.LoadFromAssemblyName(new AssemblyName(assemblyName.Name));
             }
 
             if (_contractAssemblies.Contains(assemblyName.Name)) {
@@ -99,6 +107,20 @@ namespace Blish_HUD.Modules {
             }
 
             return null;
+        }
+
+        private static HashSet<string> GetFrameworkAssemblies() {
+            var frameworkDirectories = new[] {
+                Path.GetDirectoryName(typeof(object).Assembly.Location),
+                Path.GetDirectoryName(typeof(System.Windows.Forms.Form).Assembly.Location)
+            };
+
+            string trustedAssemblies = AppContext.GetData("TRUSTED_PLATFORM_ASSEMBLIES") as string ?? string.Empty;
+
+            return new HashSet<string>(trustedAssemblies.Split(new[] { Path.PathSeparator }, StringSplitOptions.RemoveEmptyEntries)
+                                                        .Where(path => frameworkDirectories.Contains(Path.GetDirectoryName(path), StringComparer.OrdinalIgnoreCase))
+                                                        .Select(Path.GetFileNameWithoutExtension),
+                                       StringComparer.OrdinalIgnoreCase);
         }
 
     }
