@@ -16,5 +16,23 @@
     "minFileVersion": "5.0.21",
     "maxFileVersion": "5.0.21",
     "replacement": "litedb/5.0.21/LiteDB.dll"
+  },
+  {
+    "assembly": "System.Reactive",
+    "minFileVersion": "4.0.0",
+    "maxFileVersion": "4.0.0.65535",
+    "replacement": "system.reactive/5.0.0/System.Reactive.dll"
+  },
+  {
+    "assembly": "System.Reactive",
+    "minFileVersion": "5.0.0",
+    "maxFileVersion": "5.0.0.65535",
+    "replacement": "system.reactive/5.0.0/System.Reactive.dll"
+  },
+  {
+    "assembly": "jose-jwt",
+    "minFileVersion": "4.1.0",
+    "maxFileVersion": "4.1.0",
+    "replacement": "jose-jwt/4.1.0/jose-jwt.dll"
   }
 ]
