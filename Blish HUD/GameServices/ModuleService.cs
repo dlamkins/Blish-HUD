@@ -209,6 +209,7 @@ namespace Blish_HUD {
 
             HandleFirstVersionLaunch(datReader);
             LoadCompatibility(datReader);
+            AssemblySubstitutions.Load(datReader);
             LoadSpoiledList();
         }
         

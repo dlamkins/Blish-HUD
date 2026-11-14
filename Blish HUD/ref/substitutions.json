@@ -1,0 +1,8 @@
+[
+  {
+    "assembly": "Neo.Lua",
+    "minFileVersion": "1.3.0",
+    "maxFileVersion": "1.3.19.65535",
+    "replacement": "neolua/1.3.20-beta.1/Neo.Lua.dll"
+  }
+]

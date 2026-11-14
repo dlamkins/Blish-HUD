@@ -59,7 +59,13 @@ namespace Blish_HUD.Modules {
             string symbolsPath = Path.ChangeExtension(assemblyPath, ".pdb");
 
             byte[] assemblyData = _module.DataReader.GetFileBytes(assemblyPath);
-            byte[] symbolData   = _module.DataReader.GetFileBytes(symbolsPath);
+
+            if (AssemblySubstitutions.TryGetReplacement(assemblyData, out string replacementPath)) {
+                Logger.Info("Using {replacement} in place of {assembly} bundled by {module}.", replacementPath, assemblyPath, _module.Manifest.GetDetailedName());
+                return LoadFromAssemblyPath(replacementPath);
+            }
+
+            byte[] symbolData = _module.DataReader.GetFileBytes(symbolsPath);
 
             using var assemblyStream = new MemoryStream(assemblyData);
             using var symbolStream   = symbolData != null ? new MemoryStream(symbolData) : null;
