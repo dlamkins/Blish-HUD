@@ -21,7 +21,7 @@ namespace Blish_HUD.Settings {
 
                 var entryType = value.GetSettingType();
 
-                entryObject.Add(SETTINGTYPE_KEY,  $"{entryType.FullName}, {entryType.Assembly.GetName().Name}");
+                entryObject.Add(SETTINGTYPE_KEY,  SettingsTypeBinder.GetSettingTypeName(entryType));
                 entryObject.Add(SETTINGNAME_KEY,  value.EntryKey);
                 entryObject.Add(SETTINGVALUE_KEY, JToken.FromObject(value.GetSettingValue(), serializer));
 
