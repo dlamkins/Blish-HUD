@@ -70,9 +70,15 @@ namespace Blish_HUD.Modules.Managers {
             long effectDataLength = _reader.GetFileBytes(effectPath, out byte[] effectData);
 
             if (effectDataLength > 0) {
-                if (MgfxTranscoder.IsLegacyEffect(effectData, (int)effectDataLength)) {
-                    Logger.Warn("Effect {effectPath} was compiled for an older version of MonoGame (MGFX v{legacyVersion}) and can't be loaded.", effectPath, MgfxTranscoder.LEGACY_VERSION);
-                    return null;
+                try {
+                    if (MgfxTranscoder.TryUpgrade(effectData, (int)effectDataLength, out byte[] upgradedData)) {
+                        Logger.Debug("Upgraded effect {effectPath} from MGFX v{legacyVersion} to v{currentVersion}.", effectPath, MgfxTranscoder.LEGACY_VERSION, MgfxTranscoder.CURRENT_VERSION);
+
+                        effectData       = upgradedData;
+                        effectDataLength = upgradedData.Length;
+                    }
+                } catch (InvalidDataException ex) {
+                    Logger.Warn(ex, "Failed to upgrade legacy effect {effectPath}.", effectPath);
                 }
 
                 using var ctx    = GameService.Graphics.LendGraphicsDeviceContext();
