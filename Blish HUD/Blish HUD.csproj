@@ -14,6 +14,10 @@
     <GenerateResourceUsePreserializedResources>true</GenerateResourceUsePreserializedResources>
     <!-- Needed to read resources embedded in .NET Framework modules -->
     <EnableUnsafeBinaryFormatterSerialization>true</EnableUnsafeBinaryFormatterSerialization>
+    <!-- Use the runtime published to runtime\ so users don't need .NET installed -->
+    <AppHostDotNetSearch>AppRelative;Global</AppHostDotNetSearch>
+    <AppHostRelativeDotNet>runtime</AppHostRelativeDotNet>
+    <PublishDocumentationFile>false</PublishDocumentationFile>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -299,9 +303,25 @@
     <Copy SourceFiles="@(CompatAssembly)" DestinationFolder="$(PublishDir)Content\compat\%(CompatAssembly.Destination)" SkipUnchangedFiles="true" />
   </Target>
 
+  <Target Name="PublishPrivateRuntime" AfterTargets="Publish">
+    <PropertyGroup>
+      <PrivateRuntimeVersion>$(BundledNETCoreAppPackageVersion)</PrivateRuntimeVersion>
+    </PropertyGroup>
+    <ItemGroup>
+      <PrivateRuntimeDirectory Include="host\fxr\$(PrivateRuntimeVersion);shared\Microsoft.NETCore.App\$(PrivateRuntimeVersion);shared\Microsoft.WindowsDesktop.App\$(PrivateRuntimeVersion)" />
+      <PrivateRuntimeFile Include="$(NetCoreRoot)%(PrivateRuntimeDirectory.Identity)\**" Destination="%(PrivateRuntimeDirectory.Identity)" />
+    </ItemGroup>
+    <Error Condition="!Exists('$(NetCoreRoot)%(PrivateRuntimeDirectory.Identity)')" Text="$(NetCoreRoot)%(PrivateRuntimeDirectory.Identity) was not found.  The .NET SDK used to publish must include the Windows Desktop runtime $(PrivateRuntimeVersion)." />
+    <Copy SourceFiles="@(PrivateRuntimeFile)" DestinationFiles="@(PrivateRuntimeFile->'$(PublishDir)runtime\%(Destination)\%(RecursiveDir)%(Filename)%(Extension)')" SkipUnchangedFiles="true" />
+  </Target>
+
   <Target Name="BuildRef" AfterTargets="Build">
     <!-- Build ref.dat -->
     <ZipDirectory SourceDirectory="$(ProjectDir)ref" DestinationFile="$(OutDir)/ref.dat" Overwrite="true" />
+  </Target>
+
+  <Target Name="PublishRef" AfterTargets="Publish">
+    <Copy SourceFiles="$(OutDir)ref.dat" DestinationFolder="$(PublishDir)" SkipUnchangedFiles="true" />
   </Target>
 
   <Target Name="CleanRef" AfterTargets="Clean">
