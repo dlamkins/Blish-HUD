@@ -42,6 +42,13 @@ namespace Blish_HUD.Modules {
 
         #endregion
 
+        public static int GetHashCode(object obj) {
+            // .NET Framework string hash codes were stable between runs, but on .NET they're randomized
+            return obj is string str
+                       ? StringUtil.GetLegacyHashCode(str)
+                       : obj.GetHashCode();
+        }
+
     }
 
 }

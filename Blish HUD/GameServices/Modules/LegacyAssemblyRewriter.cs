@@ -45,6 +45,13 @@ namespace Blish_HUD.Modules {
                     return File.ReadAllBytes(loaded.Location);
                 }
 
+                // Framework facades such as mscorlib only load once something references them
+                string frameworkPath = (AppContext.GetData("TRUSTED_PLATFORM_ASSEMBLIES") as string)?
+                                       .Split(Path.PathSeparator)
+                                       .FirstOrDefault(path => string.Equals(Path.GetFileNameWithoutExtension(path), name, StringComparison.OrdinalIgnoreCase));
+
+                if (frameworkPath != null) return File.ReadAllBytes(frameworkPath);
+
                 // Embedded by Costura
                 using var compressed = typeof(LegacyAssemblyRewriter).Assembly.GetManifestResourceStream($"costura.{name.ToLowerInvariant()}.dll.compressed");
                 if (compressed == null) return null;
@@ -97,7 +104,8 @@ namespace Blish_HUD.Modules {
                 string name     = reader.GetString(member.Name);
 
                 if ((typeName == "System.Diagnostics.Process" && (name == "Start" || name == ".ctor"))
-                 || (typeName == "System.Diagnostics.ProcessStartInfo" && name == ".ctor")) {
+                 || (typeName == "System.Diagnostics.ProcessStartInfo" && name == ".ctor")
+                 || ((typeName == "System.Object" || typeName == "System.String") && name == "GetHashCode")) {
                     return true;
                 }
             }
@@ -113,6 +121,7 @@ namespace Blish_HUD.Modules {
 
             var processStart         = module.ImportReference(typeof(LegacyApis).GetMethod(nameof(LegacyApis.ProcessStart), new[] { typeof(string) }));
             var processStartWithArgs = module.ImportReference(typeof(LegacyApis).GetMethod(nameof(LegacyApis.ProcessStart), new[] { typeof(string), typeof(string) }));
+            var getHashCode          = module.ImportReference(typeof(LegacyApis).GetMethod(nameof(LegacyApis.GetHashCode), new[] { typeof(object) }));
             var createProcess        = module.ImportReference(typeof(LegacyApis).GetMethod(nameof(LegacyApis.CreateProcess), Type.EmptyTypes));
 
             var createStartInfo = new[] {
@@ -127,7 +136,11 @@ namespace Blish_HUD.Modules {
                 foreach (var method in type.Methods) {
                     if (!method.HasBody) continue;
 
-                    foreach (var instruction in method.Body.Instructions) {
+                    var instructions = method.Body.Instructions;
+
+                    for (int i = 0; i < instructions.Count; i++) {
+                        var instruction = instructions[i];
+
                         if (instruction.OpCode != OpCodes.Call && instruction.OpCode != OpCodes.Callvirt && instruction.OpCode != OpCodes.Newobj) continue;
                         if (!(instruction.Operand is MethodReference target)) continue;
 
@@ -145,6 +158,13 @@ namespace Blish_HUD.Modules {
                             replacement = target.Parameters.Count == 1 ? processStart
                                         : target.Parameters.Count == 2 ? processStartWithArgs
                                         : null;
+                        } else if (target.Name == "GetHashCode" && target.HasThis && target.Parameters.Count == 0) {
+                            // Constrained calls are on unboxed values and have to stay virtual
+                            bool constrained = i > 0 && instructions[i - 1].OpCode == OpCodes.Constrained;
+
+                            if (declaringType == "System.String" || (declaringType == "System.Object" && instruction.OpCode == OpCodes.Callvirt && !constrained)) {
+                                replacement = getHashCode;
+                            }
                         }
 
                         if (replacement == null) continue;
