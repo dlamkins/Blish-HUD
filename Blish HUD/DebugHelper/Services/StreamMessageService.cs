@@ -2,6 +2,7 @@
 using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.IO;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using Blish_HUD.DebugHelper.Models;
 using ProtoBuf;
@@ -27,6 +28,11 @@ namespace Blish_HUD.DebugHelper.Services {
 
         public void Start() {
             if (thread != null) return;
+
+            // Costura's resolver isn't thread safe - if the loop and a sender load protobuf-net at the same time, each
+            // can get its own copy, and types from different copies don't match (MissingMethodException)
+            RuntimeHelpers.RunClassConstructor(typeof(PrefixStyle).TypeHandle);
+            RuntimeHelpers.RunClassConstructor(typeof(Serializer).TypeHandle);
 
             thread = new Thread(Loop);
             thread.Start();
