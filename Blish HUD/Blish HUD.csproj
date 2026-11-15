@@ -245,6 +245,7 @@
     <PackageReference Include="Humanizer.Core.fr" Version="2.6.2" PrivateAssets="all" />
     <PackageReference Include="JsonSubTypes" Version="1.6.0" PrivateAssets="all" />
     <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0" PrivateAssets="all" />
+    <PackageReference Include="Mono.Cecil" Version="0.11.6" PrivateAssets="all" />
     <PackageReference Include="MonoGame.Content.Builder.Task" Version="3.8.6.1" PrivateAssets="all" />
     <PackageReference Include="MonoGame.Extended" Version="[3.8.0]" />
     <PackageReference Include="MonoGame.Extended.Content.Pipeline" Version="3.8.0" PrivateAssets="all" />

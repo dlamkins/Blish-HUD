@@ -67,6 +67,13 @@ namespace Blish_HUD.Modules {
 
             byte[] symbolData = _module.DataReader.GetFileBytes(symbolsPath);
 
+            if (LegacyAssemblyRewriter.TryRewrite(assemblyData, symbolData, GetBundledAssembly, out byte[] rewrittenAssembly, out byte[] rewrittenSymbols, out int rewrittenCalls)) {
+                Logger.Debug("Redirected {callCount} legacy API calls in {assembly} bundled by {module}.", rewrittenCalls, assemblyPath, _module.Manifest.GetDetailedName());
+
+                assemblyData = rewrittenAssembly;
+                symbolData   = rewrittenSymbols;
+            }
+
             using var assemblyStream = new MemoryStream(assemblyData);
             using var symbolStream   = symbolData != null ? new MemoryStream(symbolData) : null;
 
@@ -110,6 +117,11 @@ namespace Blish_HUD.Modules {
             }
 
             return null;
+        }
+
+        private byte[] GetBundledAssembly(string assemblyName) {
+            string assemblyPath = $"{assemblyName}.dll";
+            return _module.DataReader.FileExists(assemblyPath) ? _module.DataReader.GetFileBytes(assemblyPath) : null;
         }
 
         private Assembly LoadSatelliteAssembly(AssemblyName resourceDetails) {
