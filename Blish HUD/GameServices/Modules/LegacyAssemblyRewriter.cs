@@ -17,6 +17,11 @@ namespace Blish_HUD.Modules {
 
         private static readonly Logger Logger = Logger.GetLogger(typeof(LegacyAssemblyRewriter));
 
+        private const string CACHE_DIRECTORY = "dnfw-rewrites";
+
+        // Bump this if the rewrite rules change so old cached rewrites aren't used
+        private const int REWRITE_VERSION = 1;
+
         private sealed class AssemblyResolver : IAssemblyResolver {
 
             private readonly Func<string, byte[]>                   _moduleAssemblies;
@@ -70,27 +75,121 @@ namespace Blish_HUD.Modules {
 
         }
 
-        public static bool TryRewrite(byte[] assemblyData, byte[] symbolData, Func<string, byte[]> moduleAssemblies, out byte[] rewrittenAssembly, out byte[] rewrittenSymbols, out int rewrittenCalls) {
+        public static bool TryRewrite(byte[] assemblyData, byte[] symbolData, Func<string, byte[]> moduleAssemblies, bool useCache, out byte[] rewrittenAssembly, out byte[] rewrittenSymbols, out int rewrittenCalls) {
             rewrittenAssembly = null;
             rewrittenSymbols  = null;
             rewrittenCalls    = 0;
 
             if (!AssemblySubstitutions.IsNetFrameworkAssembly(assemblyData) || !MayNeedRewriting(assemblyData)) return false;
 
+            string cachePath = useCache ? GetCachePath(assemblyData, symbolData) : null;
+
+            if (TryReadCache(cachePath, out bool cachedResult, out rewrittenAssembly, out rewrittenSymbols)) {
+                return cachedResult;
+            }
+
             try {
                 using var resolver = new AssemblyResolver(moduleAssemblies);
-                return Rewrite(assemblyData, symbolData, resolver, out rewrittenAssembly, out rewrittenSymbols, out rewrittenCalls);
+                bool result = Rewrite(assemblyData, symbolData, resolver, out rewrittenAssembly, out rewrittenSymbols, out rewrittenCalls);
+
+                WriteCache(cachePath, result, rewrittenAssembly, rewrittenSymbols);
+
+                return result;
             } catch (Exception ex) {
                 // Fall back to loading the assembly as-is
-                Logger.Debug(ex, "Unable to rewrite legacy API calls.");
+                Logger.Warn(ex, "Unable to rewrite legacy API calls in {assembly}.", GetAssemblyName(assemblyData));
                 return false;
+            }
+        }
+
+        private static string GetAssemblyName(byte[] assemblyData) {
+            try {
+                using var pe = new PEReader(new MemoryStream(assemblyData));
+
+                var reader = pe.GetMetadataReader();
+                return reader.GetString(reader.GetAssemblyDefinition().Name);
+            } catch (Exception) {
+                return "an unknown assembly";
+            }
+        }
+
+        private static string GetCachePath(byte[] assemblyData, byte[] symbolData) {
+            try {
+                using var sha = System.Security.Cryptography.SHA256.Create();
+                sha.TransformBlock(BitConverter.GetBytes(REWRITE_VERSION), 0, sizeof(int), null, 0);
+                sha.TransformBlock(assemblyData, 0, assemblyData.Length, null, 0);
+                sha.TransformFinalBlock(symbolData ?? Array.Empty<byte>(), 0, symbolData?.Length ?? 0);
+
+                return Path.Combine(DirectoryUtil.CachePath, CACHE_DIRECTORY, Convert.ToHexString(sha.Hash));
+            } catch (Exception ex) {
+                Logger.Warn(ex, "Legacy rewrite cache is unavailable.");
+                return null;
+            }
+        }
+
+        private static bool TryReadCache(string cachePath, out bool result, out byte[] assembly, out byte[] symbols) {
+            result   = false;
+            assembly = null;
+            symbols  = null;
+
+            if (cachePath == null) return false;
+
+            try {
+                if (File.Exists(cachePath + ".none")) return true;
+                if (!File.Exists(cachePath + ".dll")) return false;
+
+                assembly = File.ReadAllBytes(cachePath + ".dll");
+                symbols  = File.Exists(cachePath + ".pdb") ? File.ReadAllBytes(cachePath + ".pdb") : null;
+                result   = true;
+
+                return true;
+            } catch (Exception ex) when (ex is IOException || ex is UnauthorizedAccessException) {
+                Logger.Warn(ex, "Failed to read cached legacy rewrite {cachePath}.", cachePath);
+                return false;
+            }
+        }
+
+        private static void WriteCache(string cachePath, bool result, byte[] assembly, byte[] symbols) {
+            if (cachePath == null) return;
+
+            try {
+                Directory.CreateDirectory(Path.GetDirectoryName(cachePath));
+
+                if (!result) {
+                    WriteAtomically(cachePath + ".none", Array.Empty<byte>());
+                    return;
+                }
+
+                if (symbols != null) {
+                    WriteAtomically(cachePath + ".pdb", symbols);
+                }
+
+                WriteAtomically(cachePath + ".dll", assembly);
+            } catch (Exception ex) when (ex is IOException || ex is UnauthorizedAccessException) {
+                Logger.Warn(ex, "Failed to cache legacy rewrite {cachePath}.", cachePath);
+            }
+        }
+
+        private static void WriteAtomically(string path, byte[] data) {
+            // The name is a hash of the input, so an existing entry is identical and never needs replacing
+            if (File.Exists(path)) return;
+
+            string temporaryPath = $"{path}.{Guid.NewGuid():N}.tmp";
+
+            try {
+                File.WriteAllBytes(temporaryPath, data);
+                File.Move(temporaryPath, path, false);
+            } catch (IOException) when (File.Exists(path)) {
+                // Another load of the same assembly cached it first
+            } finally {
+                if (File.Exists(temporaryPath)) File.Delete(temporaryPath);
             }
         }
 
         private static bool MayNeedRewriting(byte[] assemblyData) {
             using var pe = new PEReader(new MemoryStream(assemblyData));
 
-            // Mixed-mode assembles can't be rewritten
+            // Mixed-mode assemblies can't be rewritten
             if ((pe.PEHeaders.CorHeader.Flags & CorFlags.ILOnly) == 0) return false;
 
             var reader = pe.GetMetadataReader();
