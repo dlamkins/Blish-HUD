@@ -1,6 +1,7 @@
 ﻿using Blish_HUD.DebugHelper.Services;
 using EntryPoint;
 using System;
+using System.Drawing;
 using System.IO;
 using System.Reflection;
 using System.Threading;
@@ -48,6 +49,9 @@ namespace Blish_HUD {
         [STAThread]
         private static void Main(string[] args) {
             Directory.SetCurrentDirectory(Path.GetDirectoryName(Application.ExecutablePath));
+
+            // Match the .NET Framework default font that our forms were designed with
+            Application.SetDefaultFont(new Font(new FontFamily("Microsoft Sans Serif"), 8.25f));
 
             var settings = Cli.Parse<ApplicationSettings>(args);
 
