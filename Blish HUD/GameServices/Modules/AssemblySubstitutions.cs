@@ -14,7 +14,7 @@ namespace Blish_HUD.Modules {
 
         private static readonly Logger Logger = Logger.GetLogger(typeof(AssemblySubstitutions));
 
-        private const string COMPAT_DIRECTORY   = "compat";
+        private const string COMPAT_DIRECTORY   = @"Content\compat";
         private const string SUBSTITUTIONS_FILE = "substitutions.json";
 
         private const string TARGETFRAMEWORK_ATTRIBUTE = "System.Runtime.Versioning.TargetFrameworkAttribute";

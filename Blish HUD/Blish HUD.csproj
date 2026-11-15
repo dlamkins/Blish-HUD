@@ -292,11 +292,11 @@
 
   <Target Name="CopyCompatAssemblies" AfterTargets="Build">
     <Error Condition="!Exists('%(CompatAssembly.Identity)')" Text="Compatibility assembly %(CompatAssembly.Identity) was not found.  Make sure the project has been restored." />
-    <Copy SourceFiles="@(CompatAssembly)" DestinationFolder="$(OutDir)compat\%(CompatAssembly.Destination)" SkipUnchangedFiles="true" />
+    <Copy SourceFiles="@(CompatAssembly)" DestinationFolder="$(OutDir)Content\compat\%(CompatAssembly.Destination)" SkipUnchangedFiles="true" />
   </Target>
 
   <Target Name="PublishCompatAssemblies" AfterTargets="Publish">
-    <Copy SourceFiles="@(CompatAssembly)" DestinationFolder="$(PublishDir)compat\%(CompatAssembly.Destination)" SkipUnchangedFiles="true" />
+    <Copy SourceFiles="@(CompatAssembly)" DestinationFolder="$(PublishDir)Content\compat\%(CompatAssembly.Destination)" SkipUnchangedFiles="true" />
   </Target>
 
   <Target Name="BuildRef" AfterTargets="Build">
