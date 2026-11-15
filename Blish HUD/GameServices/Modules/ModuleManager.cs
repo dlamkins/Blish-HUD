@@ -32,6 +32,13 @@ namespace Blish_HUD.Modules {
         public bool AssemblyLoaded => _moduleAssembly != null;
 
         internal Assembly ModuleAssembly => _moduleAssembly;
+
+        /// <summary>
+        /// The module was loaded with --module for debugging.
+        /// </summary>
+        internal bool IsDebugModule { get; private set; }
+
+        internal void MarkAsDebugModule() => this.IsDebugModule = true;
         
         /// <summary>
         /// Used to indicate if a different version of the assembly has previously

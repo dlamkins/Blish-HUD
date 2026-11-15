@@ -68,10 +68,15 @@ namespace Blish_HUD.Modules {
             byte[] symbolData = _module.DataReader.GetFileBytes(symbolsPath);
 
             if (LegacyAssemblyRewriter.TryRewrite(assemblyData, symbolData, GetBundledAssembly, out byte[] rewrittenAssembly, out byte[] rewrittenSymbols, out int rewrittenCalls)) {
-                Logger.Debug("Redirected {callCount} legacy API calls in {assembly} bundled by {module}.", rewrittenCalls, assemblyPath, _module.Manifest.GetDetailedName());
+                if (_module.IsDebugModule) {
+                    // A debugger expects the exact assembly and symbols it built
+                    Logger.Warn("{assembly} in {module} has {callCount} calls that behave differently on .NET (Process.Start without UseShellExecute, string.GetHashCode). They weren't redirected because the module is being debugged.", assemblyPath, _module.Manifest.GetDetailedName(), rewrittenCalls);
+                } else {
+                    Logger.Debug("Redirected {callCount} legacy API calls in {assembly} bundled by {module}.", rewrittenCalls, assemblyPath, _module.Manifest.GetDetailedName());
 
-                assemblyData = rewrittenAssembly;
-                symbolData   = rewrittenSymbols;
+                    assemblyData = rewrittenAssembly;
+                    symbolData   = rewrittenSymbols;
+                }
             }
 
             using var assemblyStream = new MemoryStream(assemblyData);
