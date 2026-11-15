@@ -3,4 +3,12 @@
     "Taimi.UndaDaSea_BlishHUD": "<2.0.0", // Audio dependency changes break UndaDaSea in early versions.
     "bh.general.events": "<1.0.0", // IWindow contract change broke the notification mover.
     "Kenedia.Modules.BuildsManager": "<=0.0.20", // Fails to unload and CornerIcon does not work.
+
+    "itzferal.tyriasgps": "<=1.9.0", // JavaScriptSerializer (System.Web.Extensions) doesn't exist in .NET 10.
+    "Yeh.WebPeeper": "<=2.1.0", // The CefSharp build fails to load on .NET 10.
+    "Yeh.PathingCategoryExplorerPlugin": "<=0.0.3", // Bundles MonoMod's .NET Framework build.
+    "Yeh.PathingMapAlignPlugin": "<=0.0.1", // Bundles MonoMod's .NET Framework build.
+    "gw2.wvwpiptally": "<=0.1.0", // WinRT
+    "LoreBridge": "<=0.3.1", // WinRT
+    "vrae.lorebook_reader": "<=0.8.6", // WinRT
 }
