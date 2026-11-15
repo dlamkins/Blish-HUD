@@ -262,6 +262,8 @@
     <PackageReference Include="protobuf-net" Version="3.0.101" PrivateAssets="all" />
     <PackageReference Include="System.ComponentModel.Composition" Version="6.0.0" />
     <PackageReference Include="System.ServiceModel.Primitives" Version="4.9.0" />
+    <!-- Kept available for modules (Timers, Chat Shorts, Custom Timers & Events). -->
+    <PackageReference Include="System.Speech" Version="10.0.15" />
     <PackageReference Include="System.Runtime.Serialization.Formatters" Version="10.0.15" />
   </ItemGroup>
 
